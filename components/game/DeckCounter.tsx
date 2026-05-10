@@ -26,7 +26,7 @@ export function DeckCounter({ deck, discardPile }: DeckCounterProps) {
       {topDiscard && (
         <div className="flex flex-col items-center gap-1">
           <GameCard card={topDiscard} />
-          <span className="text-muted-foreground text-xs">Last flipped</span>
+          <span className="text-muted-foreground text-xs">Last drawn</span>
         </div>
       )}
     </div>

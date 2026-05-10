@@ -122,7 +122,7 @@ describe('win condition', () => {
       ],
     });
     state = applyAction(state, { type: 'START_GAME' });
-    // p1 flips 12 and stays
+    // p1 draws 12 and stays
     state = applyAction(state, { type: 'DRAW' });
     state = applyAction(state, { type: 'STAY' });
     // p2 stays with 0 score — all players done → NEXT_ROUND fires → ROUND_END

@@ -125,7 +125,7 @@ export default function HomePage() {
     <div>
       <label className="text-muted-foreground text-sm">Game mode</label>
       <div className="mt-1 flex gap-2">
-        {([['free', 'Free Play', 'Flip until you stay'], ['one-per-turn', 'One Per Turn', 'One card each round']] as const).map(([val, title, sub]) => (
+        {([['free', 'Free Play', 'Draw until you stay'], ['one-per-turn', 'One Per Turn', 'One card each round']] as const).map(([val, title, sub]) => (
           <button
             key={val}
             onClick={() => setGameMode(val)}
@@ -256,7 +256,7 @@ export default function HomePage() {
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
         <div className="text-center">
           <h1 className="text-7xl font-black text-foreground mb-2 brand-heading">
-            FLIP<span className="text-primary">7</span>
+            CARD<span className="text-primary">RUSH</span>
           </h1>
           <p className="text-muted-foreground text-lg">Push your luck. Know when to stop.</p>
         </div>
@@ -272,7 +272,7 @@ export default function HomePage() {
           </Button>
         </div>
         <p className="text-muted-foreground text-xs text-center max-w-xs">
-          Flip cards to score points. Flip a duplicate and lose everything. First to {pointTarget} wins!
+          Draw cards to score points. Draw a duplicate and lose everything. First to {pointTarget} wins!
         </p>
       </div>
     </div>
