@@ -59,7 +59,7 @@ export const usePlayerStore = create<PlayerStore>()(
   persist(
     (set) => ({
       name: 'Player 1',
-      emoji: randomEmoji(),
+      emoji: '🦊',
       setName: (name) => set({ name }),
       setEmoji: (emoji) => set({ emoji }),
     }),
