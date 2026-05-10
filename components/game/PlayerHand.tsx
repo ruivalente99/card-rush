@@ -18,6 +18,8 @@ interface PlayerHandProps {
 export const PlayerHand = forwardRef<HTMLDivElement, PlayerHandProps>(
   function PlayerHand({ player, isActive, deck, size = 'md', emoji }, ref) {
     const rs = player.roundState;
+    const isNullPlayer = player.name.toUpperCase() === 'NULL';
+    const displayEmoji = isNullPlayer ? '👾' : emoji;
     const uniqueNums = countUniqueNumbers(rs.hand);
     const bustProb = bustProbability(deck, rs.hand);
     const bustPct = Math.round(bustProb * 100);
@@ -39,7 +41,7 @@ export const PlayerHand = forwardRef<HTMLDivElement, PlayerHandProps>(
 
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5 flex-wrap">
-            {emoji && <span className="text-base leading-none">{emoji}</span>}
+            {displayEmoji && <span className="text-base leading-none">{displayEmoji}</span>}
             <span className="font-semibold text-foreground text-sm">{player.name}</span>
             {isActive && (
               <Badge className="bg-primary text-primary-foreground text-xs animate-pulse px-1.5">Turn</Badge>

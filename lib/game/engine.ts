@@ -1,4 +1,4 @@
-import type { GameState, GameAction, GameMode, Player, PlayerRoundState } from './types';
+import type { GameState, GameAction, GameMode, Player, PlayerRoundState, Card } from './types';
 import { buildDeck, drawCard } from './deck';
 import { calculateRoundScore, countUniqueNumbers } from './scoring';
 
@@ -39,6 +39,13 @@ function nextActiveIndex(players: Player[], from: number): number {
     if (!isPlayerDone(players[idx])) return idx;
   }
   return from;
+}
+
+function checkSequenceTrigger(hand: Card[]): boolean {
+  const nums = hand.filter((c) => c.type === 'number').map((c) => c.value!);
+  if (nums.length < 3) return false;
+  const [a, b, c] = nums.slice(-3);
+  return (b === a + 1 && c === b + 1) || (b === a - 1 && c === b - 1);
 }
 
 function checkWin(state: GameState): GameState {
@@ -236,9 +243,11 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       const newHand = [...rs.hand, card];
       const uniqueNums = countUniqueNumbers(newHand);
       const isLucky7 = uniqueNums >= 7;
+      // Easter egg: consecutive sequence 1-2-3 or 3-2-1 (among last 3 drawn numbers) → HyperTrain
+      const sequenceHyper = !rs.hyperTrainActive && checkSequenceTrigger(newHand);
       const updatedPlayer: Player = {
         ...player,
-        roundState: { ...rs, hand: newHand, isLucky7 },
+        roundState: { ...rs, hand: newHand, isLucky7, hyperTrainActive: rs.hyperTrainActive || sequenceHyper },
       };
       let next: GameState = {
         ...state,
@@ -307,6 +316,21 @@ export function applyAction(state: GameState, action: GameAction): GameState {
         })),
         round: state.round + 1,
         currentPlayerIndex: 0,
+      };
+    }
+
+    case 'FORCE_HYPERTRAIN': {
+      if (state.phase !== 'PLAYING') return state;
+      const playerIdx = state.currentPlayerIndex;
+      const player = state.players[playerIdx];
+      if (player.roundState.hyperTrainActive) return state; // already active
+      const updatedPlayer: Player = {
+        ...player,
+        roundState: { ...player.roundState, hyperTrainActive: true },
+      };
+      return {
+        ...state,
+        players: state.players.map((p, i) => (i === playerIdx ? updatedPlayer : p)),
       };
     }
 

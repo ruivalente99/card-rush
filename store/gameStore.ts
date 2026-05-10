@@ -88,6 +88,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const scoreToasts = detectScoreToasts(prev.players, next.players);
 
+    // Detect HyperTrain activation (sequence combo or FORCE_HYPERTRAIN)
+    for (const p of next.players) {
+      const pp = prev.players.find((x) => x.id === p.id);
+      if (pp && !pp.roundState.hyperTrainActive && p.roundState.hyperTrainActive) {
+        get().addToast(`🌈 ${p.name} HyperTrain! Numbers ×2`);
+      }
+    }
+
     const uiUpdates: Partial<UIState> = {};
     if (newlyBusted) {
       uiUpdates.showBustOverlay = true;
@@ -112,11 +120,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const msgs = detectScoreToasts(prev.players, newState.players);
       msgs.forEach((msg) => get().addToast(msg));
 
-      // Detect bust for online overlay (server already advanced; overlay is cosmetic)
+      // Detect bust for online overlay
       const prevBusted = new Set(prev.players.filter((p) => p.roundState.busted).map((p) => p.id));
       const newlyBusted = newState.players.find((p) => p.roundState.busted && !prevBusted.has(p.id));
       if (newlyBusted) {
         get().setUI({ showBustOverlay: true, bustingPlayerName: newlyBusted.name });
+      }
+
+      // Detect HyperTrain activation
+      for (const p of newState.players) {
+        const pp = prev.players.find((x) => x.id === p.id);
+        if (pp && !pp.roundState.hyperTrainActive && p.roundState.hyperTrainActive) {
+          get().addToast(`🌈 ${p.name} HyperTrain! Numbers ×2`);
+        }
       }
     }
     set({ onlineGame: newState });

@@ -84,7 +84,9 @@ export default function LobbyPage() {
             {players.map((p, i) => (
               <li key={p.id} className="px-4 py-3 flex items-center gap-2">
                 <span className="text-muted-foreground text-xs w-4">{i + 1}.</span>
-                {p.emoji && <span className="text-base leading-none">{p.emoji}</span>}
+                <span className="text-base leading-none">
+                  {p.name?.toUpperCase() === 'NULL' ? '👾' : (p.emoji ?? '')}
+                </span>
                 <span className="text-foreground">{p.name}</span>
                 {i === 0 && (
                   <span className="ml-auto text-xs text-primary font-medium">Host</span>

@@ -1,7 +1,56 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/db/client';
+import { applyAction } from '@/lib/game/engine';
+import type { GameState } from '@/lib/game/types';
 
 export const dynamic = 'force-dynamic';
+
+const INACTIVITY_MS = 30_000;
+
+async function autoAdvanceInactive(roomId: string): Promise<void> {
+  try {
+    await (prisma as any).$transaction(async (tx: typeof prisma) => {
+      const room = await (tx as any).room.findUnique({ where: { id: roomId } });
+      if (!room || room.phase !== 'PLAYING') return;
+
+      const state: GameState = JSON.parse(room.state);
+      const ci = state.currentPlayerIndex;
+      const cp = state.players[ci];
+      if (!cp || cp.roundState.busted || cp.roundState.stayed || cp.roundState.froze) return;
+
+      const rp = await (tx as any).roomPlayer.findUnique({
+        where: { roomId_playerId: { roomId, playerId: cp.id } },
+      });
+      if (!rp) return;
+
+      const inactive = Date.now() - new Date(rp.lastSeen).getTime() > INACTIVITY_MS;
+      if (!inactive) return;
+
+      // Auto-STAY for inactive player (banks current score, advances turn)
+      const newState = applyAction(state, { type: 'STAY' });
+
+      const lastEvent = await (tx as any).roomEvent.findFirst({
+        where: { roomId },
+        orderBy: { seq: 'desc' },
+      });
+      const seq = (lastEvent?.seq ?? 0) + 1;
+
+      await (tx as any).room.update({
+        where: { id: roomId },
+        data: { state: JSON.stringify(newState), phase: newState.phase },
+      });
+      await (tx as any).roomEvent.create({
+        data: {
+          roomId,
+          seq,
+          payload: JSON.stringify({ action: { type: 'STAY' }, state: newState }),
+        },
+      });
+    });
+  } catch {
+    // Swallow — another connection may have raced and already advanced
+  }
+}
 
 export async function GET(
   req: NextRequest,
@@ -42,10 +91,13 @@ export async function GET(
         send(JSON.stringify({ seq: lastSeq, state: JSON.parse(currentRoom.state) }));
       }
 
-      // Poll for new events
+      // Poll for new events + check inactivity
       while (!closed) {
         await new Promise((r) => setTimeout(r, 500));
         if (closed) break;
+
+        // Inactivity check every poll cycle
+        await autoAdvanceInactive(roomId);
 
         const events = await prisma.roomEvent.findMany({
           where: { roomId, seq: { gt: lastSeq } },

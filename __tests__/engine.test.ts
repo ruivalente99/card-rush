@@ -104,8 +104,8 @@ describe('Lucky 7 bonus', () => {
     const p1 = state.players[0];
     expect(p1.roundState.isLucky7).toBe(true);
     expect(p1.roundState.stayed).toBe(true);
-    // base = 0+1+2+3+4+5+6 = 21, +LUCKY7_BONUS(15) = 36
-    expect(p1.roundState.roundScore).toBe(36);
+    // base = 0+1+2+3+4+5+6 = 21, HyperTrain from seq 0,1,2 → ×2 = 42, +LUCKY7_BONUS(15) = 57
+    expect(p1.roundState.roundScore).toBe(57);
   });
 });
 

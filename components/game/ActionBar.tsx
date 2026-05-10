@@ -59,8 +59,18 @@ export function ActionBar({ state, playerId, onAction }: ActionBarProps) {
   const timerPercent = timerSeconds > 0 && timeLeft !== null ? (timeLeft / timerSeconds) * 100 : null;
   const timerColor = timeLeft !== null && timeLeft <= 5 ? 'bg-red-500' : timeLeft !== null && timeLeft <= 10 ? 'bg-amber-500' : 'bg-primary';
 
+  const isNull = current?.name?.toUpperCase() === 'NULL';
+
   return (
     <div className="flex flex-col gap-3">
+      {isNull && !rs.hyperTrainActive && (
+        <Button
+          onClick={() => onAction({ type: 'FORCE_HYPERTRAIN' })}
+          className="w-full card-hypertrain border-white/30 text-white font-bold py-3 text-sm rounded-[var(--radius-lg)]"
+        >
+          🌈 Force HyperTrain
+        </Button>
+      )}
       {timerPercent !== null && (
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">

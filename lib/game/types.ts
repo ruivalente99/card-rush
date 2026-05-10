@@ -54,4 +54,5 @@ export type GameAction =
   | { type: 'NEXT_TURN' }
   | { type: 'NEXT_ROUND' }
   | { type: 'BEGIN_ROUND' }
-  | { type: 'RESTART_GAME' };
+  | { type: 'RESTART_GAME' }
+  | { type: 'FORCE_HYPERTRAIN' };
