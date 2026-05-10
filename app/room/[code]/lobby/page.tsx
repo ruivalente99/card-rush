@@ -10,20 +10,16 @@ export default function LobbyPage() {
   const params = useParams();
   const code = params.code as string;
   const router = useRouter();
-  const { playerId } = useGameStore();
+  const { playerId, addToast } = useGameStore();
   const [players, setPlayers] = useState<{ id: string; name: string; emoji?: string }[]>([]);
   const [isHost, setIsHost] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const inviteLink = typeof window !== 'undefined'
     ? `${window.location.origin}/room/${code}/join`
     : `/room/${code}/join`;
 
   const copyLink = () => {
-    navigator.clipboard.writeText(inviteLink).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    navigator.clipboard.writeText(inviteLink).then(() => addToast('🔗 Link copied!'));
   };
 
   useEffect(() => {
@@ -70,14 +66,12 @@ export default function LobbyPage() {
               {code}
             </span>
           </div>
-          <div className="flex gap-2 mt-3 w-full">
-            <div className="flex-1 min-w-0 py-2 px-3 rounded-[var(--radius-md)] border border-border bg-card text-muted-foreground text-sm truncate">
-              🔗 {inviteLink.replace('https://', '')}
-            </div>
-            <Button size="sm" variant="outline" onClick={copyLink} className="shrink-0">
-              {copied ? '✓' : 'Copy link'}
-            </Button>
-          </div>
+          <button
+            onClick={copyLink}
+            className="w-full mt-3 py-2 px-3 rounded-[var(--radius-md)] border border-border bg-card hover:bg-accent active:scale-[0.98] transition-all text-muted-foreground hover:text-foreground text-sm text-left truncate"
+          >
+            🔗 {inviteLink.replace('https://', '')}
+          </button>
         </div>
 
         <div className="w-full bg-card rounded-[var(--radius-lg)] border border-border overflow-hidden">

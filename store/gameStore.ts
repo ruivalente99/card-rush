@@ -4,6 +4,11 @@ import { create } from 'zustand';
 import type { GameState, GameAction, Card } from '@/lib/game/types';
 import { applyAction } from '@/lib/game/engine';
 
+interface Toast {
+  id: string;
+  msg: string;
+}
+
 interface UIState {
   showBustOverlay: boolean;
   showWinOverlay: boolean;
@@ -11,6 +16,7 @@ interface UIState {
   pendingCard: Card | null;
   bustingPlayerName: string | null;
   ping: number | null;
+  toasts: Toast[];
 }
 
 interface GameStore {
@@ -31,6 +37,8 @@ interface GameStore {
 
   ui: UIState;
   setUI: (partial: Partial<UIState>) => void;
+  addToast: (msg: string) => void;
+  removeToast: (id: string) => void;
 }
 
 const defaultUI: UIState = {
@@ -40,7 +48,26 @@ const defaultUI: UIState = {
   pendingCard: null,
   bustingPlayerName: null,
   ping: null,
+  toasts: [],
 };
+
+function detectScoreToasts(
+  prevPlayers: GameState['players'],
+  nextPlayers: GameState['players']
+): string[] {
+  const msgs: string[] = [];
+  for (const p of nextPlayers) {
+    const prev = prevPlayers.find((pp) => pp.id === p.id);
+    if (!prev) continue;
+    const justStayed = p.roundState.stayed && !prev.roundState.stayed;
+    const justFroze = p.roundState.froze && !prev.roundState.froze;
+    if (justStayed || justFroze) {
+      const verb = justFroze ? 'frozen' : 'stayed';
+      msgs.push(`${p.name} ${verb} · +${p.roundState.roundScore} pts`);
+    }
+  }
+  return msgs;
+}
 
 export const useGameStore = create<GameStore>((set, get) => ({
   localGame: null,
@@ -59,6 +86,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       (p) => p.roundState.busted && !prevBusted.has(p.id)
     );
 
+    const scoreToasts = detectScoreToasts(prev.players, next.players);
+
     const uiUpdates: Partial<UIState> = {};
     if (newlyBusted) {
       uiUpdates.showBustOverlay = true;
@@ -69,6 +98,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
 
     set({ localGame: next, ui: { ...get().ui, ...uiUpdates } });
+    scoreToasts.forEach((msg) => get().addToast(msg));
   },
   clearLocalGame: () => set({ localGame: null }),
 
@@ -76,7 +106,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   lastSeq: 0,
   roomCode: null,
   playerId: null,
-  setOnlineGame: (state) => set({ onlineGame: state }),
+  setOnlineGame: (newState) => {
+    const prev = get().onlineGame;
+    if (prev) {
+      const msgs = detectScoreToasts(prev.players, newState.players);
+      msgs.forEach((msg) => get().addToast(msg));
+    }
+    set({ onlineGame: newState });
+  },
   setRoomCode: (code) => {
     set({ roomCode: code });
     if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('cardrush:roomCode', code);
@@ -96,4 +133,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   ui: defaultUI,
   setUI: (partial) => set((s) => ({ ui: { ...s.ui, ...partial } })),
+  addToast: (msg) => {
+    const id = Math.random().toString(36).slice(2);
+    set((s) => ({ ui: { ...s.ui, toasts: [...s.ui.toasts, { id, msg }] } }));
+    setTimeout(() => get().removeToast(id), 2500);
+  },
+  removeToast: (id) =>
+    set((s) => ({
+      ui: { ...s.ui, toasts: s.ui.toasts.filter((t) => t.id !== id) },
+    })),
 }));
