@@ -84,8 +84,8 @@ export default function LocalGamePage() {
       )}
 
       {(state.phase === 'PLAYING' || state.phase === 'ROUND_END') && (
-        <div className="flex flex-col md:flex-row gap-4 flex-1">
-          <div className="flex flex-col gap-3 md:flex-1 md:min-w-0">
+        <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
+          <div className="flex flex-col gap-3 md:flex-1 md:min-w-0 overflow-y-auto">
             <DeckCounter deck={state.deck} discardPile={state.discardPile} />
             <div className="space-y-2">
               {state.players.map((player, i) => (
@@ -109,13 +109,25 @@ export default function LocalGamePage() {
               currentPlayerIndex={state.currentPlayerIndex}
             />
             {state.phase === 'PLAYING' && currentPlayer && (
-              <ActionBar
-                state={state}
-                playerId={currentPlayer.id}
-                onAction={handleAction}
-              />
+              <div className="hidden md:block">
+                <ActionBar
+                  state={state}
+                  playerId={currentPlayer.id}
+                  onAction={handleAction}
+                />
+              </div>
             )}
           </div>
+        </div>
+      )}
+
+      {state.phase === 'PLAYING' && currentPlayer && (
+        <div className="md:hidden sticky bottom-0 z-10 py-3 bg-background/95 backdrop-blur-sm border-t border-border -mx-4 px-4">
+          <ActionBar
+            state={state}
+            playerId={currentPlayer.id}
+            onAction={handleAction}
+          />
         </div>
       )}
 

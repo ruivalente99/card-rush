@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { GameHeader } from '@/components/ui/game-header';
@@ -33,13 +33,14 @@ export default function HomePage() {
 
   const [mode, setMode] = useState<'home' | 'local-setup' | 'online-create' | 'online-join'>('home');
 
-  const initPlayers = (): PlayerEntry[] => [
+  const initialPlayersRef = useRef<PlayerEntry[]>([
     { id: uuidv4(), name: savedName },
     { id: uuidv4(), name: 'Player 2' },
-  ];
-
-  const [players, setPlayers] = useState<PlayerEntry[]>(initPlayers);
-  const [playerEmojis, setPlayerEmojis] = useState<Record<string, string>>(() => initPlayerEmojis(initPlayers()));
+  ]);
+  const [players, setPlayers] = useState<PlayerEntry[]>(() => initialPlayersRef.current);
+  const [playerEmojis, setPlayerEmojis] = useState<Record<string, string>>(
+    () => initPlayerEmojis(initialPlayersRef.current)
+  );
   const [pointTarget, setPointTarget] = useState(200);
   const [gameMode, setGameMode] = useState<GameMode>('free');
   const [roomCode, setRoomCode] = useState('');
