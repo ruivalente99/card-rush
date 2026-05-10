@@ -32,7 +32,7 @@ export interface GameConfig {
   maxRounds?: number;
   turnTimerSeconds: number;
   gameMode: GameMode;
-  players: { id: string; name: string }[];
+  players: { id: string; name: string; emoji?: string }[];
 }
 
 export interface GameState {

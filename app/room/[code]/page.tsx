@@ -11,6 +11,8 @@ import { ActionBar } from '@/components/game/ActionBar';
 import { BustOverlay } from '@/components/game/BustOverlay';
 import { RoundEndOverlay } from '@/components/game/RoundEndOverlay';
 import { GameHeader } from '@/components/ui/game-header';
+import { usePlayerStore, deduplicateEmojis } from '@/store/playerStore';
+import { useMemo } from 'react';
 import type { GameAction } from '@/lib/game/types';
 
 export default function OnlineGamePage() {
@@ -50,6 +52,11 @@ export default function OnlineGamePage() {
   const state = onlineGame;
   const isHost = state.config.players[0]?.id === playerId;
   const cardSize = state.players.length > 3 ? 'sm' : 'md';
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const emojiMap = useMemo(
+    () => deduplicateEmojis(state.config.players, playerId ?? ''),
+    [state.config.players, playerId]
+  );
 
   return (
     <div className="min-h-screen flex flex-col p-4 gap-4 max-w-7xl mx-auto w-full">
@@ -73,6 +80,7 @@ export default function OnlineGamePage() {
                 isActive={i === state.currentPlayerIndex}
                 deck={state.deck}
                 size={cardSize}
+                emoji={emojiMap[player.id]}
               />
             ))}
           </div>

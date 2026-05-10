@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { GameHeader } from '@/components/ui/game-header';
 import { useGameStore } from '@/store/gameStore';
-import { usePlayerStore } from '@/store/playerStore';
+import { usePlayerStore, EMOJIS, randomEmoji, nextEmoji } from '@/store/playerStore';
 import { createInitialState } from '@/lib/game/engine';
 import { v4 as uuidv4 } from 'uuid';
 import type { GameMode } from '@/lib/game/types';
@@ -15,26 +15,74 @@ interface PlayerEntry {
   name: string;
 }
 
+function initPlayerEmojis(players: PlayerEntry[]): Record<string, string> {
+  const used: string[] = [];
+  const result: Record<string, string> = {};
+  for (const p of players) {
+    const e = randomEmoji(used);
+    used.push(e);
+    result[p.id] = e;
+  }
+  return result;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { setLocalGame } = useGameStore();
-  const { name: savedName, emoji } = usePlayerStore();
+  const { name: savedName, emoji: myEmoji } = usePlayerStore();
 
   const [mode, setMode] = useState<'home' | 'local-setup' | 'online-create' | 'online-join'>('home');
-  const [players, setPlayers] = useState<PlayerEntry[]>([
+
+  const initPlayers = (): PlayerEntry[] => [
     { id: uuidv4(), name: savedName },
     { id: uuidv4(), name: 'Player 2' },
-  ]);
+  ];
+
+  const [players, setPlayers] = useState<PlayerEntry[]>(initPlayers);
+  const [playerEmojis, setPlayerEmojis] = useState<Record<string, string>>(() => initPlayerEmojis(initPlayers()));
   const [pointTarget, setPointTarget] = useState(200);
   const [gameMode, setGameMode] = useState<GameMode>('free');
   const [roomCode, setRoomCode] = useState('');
   const [joinName, setJoinName] = useState(savedName);
   const [hostName, setHostName] = useState(savedName);
 
+  const cycleEmoji = useCallback((playerId: string) => {
+    setPlayerEmojis(prev => {
+      const used = Object.entries(prev)
+        .filter(([id]) => id !== playerId)
+        .map(([, e]) => e);
+      return { ...prev, [playerId]: nextEmoji(prev[playerId] ?? EMOJIS[0], used) };
+    });
+  }, []);
+
+  const addPlayer = () => {
+    const newId = uuidv4();
+    const used = Object.values(playerEmojis);
+    setPlayers(prev => [...prev, { id: newId, name: `Player ${prev.length + 1}` }]);
+    setPlayerEmojis(prev => ({ ...prev, [newId]: randomEmoji(used) }));
+  };
+
+  const removePlayer = (idx: number) => {
+    setPlayers(prev => {
+      const next = prev.filter((_, j) => j !== idx);
+      setPlayerEmojis(old => {
+        const copy = { ...old };
+        delete copy[prev[idx].id];
+        return copy;
+      });
+      return next;
+    });
+  };
+
   const startLocal = () => {
     const validPlayers = players.filter((p) => p.name.trim());
     if (validPlayers.length < 2) return;
-    const state = createInitialState({ pointTarget, turnTimerSeconds: 0, gameMode, players: validPlayers });
+    const state = createInitialState({
+      pointTarget,
+      turnTimerSeconds: 0,
+      gameMode,
+      players: validPlayers.map(p => ({ ...p, emoji: playerEmojis[p.id] })),
+    });
     setLocalGame(state);
     router.push('/local');
   };
@@ -45,7 +93,7 @@ export default function HomePage() {
     const res = await fetch('/api/room/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ hostId, hostName: hostName.trim(), pointTarget, gameMode }),
+      body: JSON.stringify({ hostId, hostName: hostName.trim(), hostEmoji: myEmoji, pointTarget, gameMode }),
     });
     const data = await res.json();
     if (data.code) {
@@ -62,7 +110,7 @@ export default function HomePage() {
     const res = await fetch(`/api/room/${roomCode.trim().toUpperCase()}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId, playerName: joinName.trim() }),
+      body: JSON.stringify({ playerId, playerName: joinName.trim(), playerEmoji: myEmoji }),
     });
     if (res.ok) {
       const store = useGameStore.getState();
@@ -105,7 +153,14 @@ export default function HomePage() {
           <div className="space-y-2">
             <label className="text-muted-foreground text-sm">Players (2–6)</label>
             {players.map((p, i) => (
-              <div key={p.id} className="flex gap-2">
+              <div key={p.id} className="flex gap-2 items-center">
+                <button
+                  onClick={() => cycleEmoji(p.id)}
+                  title="Click to change emoji"
+                  className="w-9 h-9 text-xl flex items-center justify-center rounded-[var(--radius-md)] bg-muted hover:bg-accent transition-colors shrink-0"
+                >
+                  {playerEmojis[p.id]}
+                </button>
                 <input
                   className="game-input flex-1"
                   value={p.name}
@@ -117,14 +172,12 @@ export default function HomePage() {
                   placeholder={`Player ${i + 1}`}
                 />
                 {players.length > 2 && (
-                  <button onClick={() => setPlayers(players.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive px-2">✕</button>
+                  <button onClick={() => removePlayer(i)} className="text-muted-foreground hover:text-destructive px-2">✕</button>
                 )}
               </div>
             ))}
             {players.length < 6 && (
-              <button onClick={() => setPlayers([...players, { id: uuidv4(), name: `Player ${players.length + 1}` }])} className="text-primary hover:text-primary/80 text-sm">
-                + Add player
-              </button>
+              <button onClick={addPlayer} className="text-primary hover:text-primary/80 text-sm">+ Add player</button>
             )}
           </div>
           <GameModeSelector />
@@ -150,7 +203,11 @@ export default function HomePage() {
           <h1 className="text-3xl font-black text-foreground brand-heading">Create Room</h1>
           <div>
             <label className="text-muted-foreground text-sm">Your name</label>
-            <input className="game-input mt-1" value={hostName} onChange={(e) => setHostName(e.target.value)} placeholder="Your name" />
+            <div className="flex gap-2 mt-1">
+              <div className="w-10 h-10 text-xl flex items-center justify-center bg-muted rounded-[var(--radius-md)] shrink-0">{myEmoji}</div>
+              <input className="game-input flex-1" value={hostName} onChange={(e) => setHostName(e.target.value)} placeholder="Your name" />
+            </div>
+            <p className="text-muted-foreground text-xs mt-1">Change your icon in ⚙ settings</p>
           </div>
           <GameModeSelector />
           <div>
@@ -179,7 +236,10 @@ export default function HomePage() {
           </div>
           <div>
             <label className="text-muted-foreground text-sm">Your name</label>
-            <input className="game-input mt-1" value={joinName} onChange={(e) => setJoinName(e.target.value)} placeholder="Your name" />
+            <div className="flex gap-2 mt-1">
+              <div className="w-10 h-10 text-xl flex items-center justify-center bg-muted rounded-[var(--radius-md)] shrink-0">{myEmoji}</div>
+              <input className="game-input flex-1" value={joinName} onChange={(e) => setJoinName(e.target.value)} placeholder="Your name" />
+            </div>
           </div>
           <Button onClick={joinOnlineRoom} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-5 text-lg">
             Join Room

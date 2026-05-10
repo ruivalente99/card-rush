@@ -7,7 +7,7 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
-  const { playerId, playerName } = await req.json();
+  const { playerId, playerName, playerEmoji } = await req.json();
 
   if (!playerId || !playerName) {
     return NextResponse.json({ error: 'playerId and playerName required' }, { status: 400 });
@@ -24,7 +24,7 @@ export async function POST(
   // Check if player already in room
   const existing = state.config.players.find((p) => p.id === playerId);
   if (!existing) {
-    state.config.players.push({ id: playerId, name: playerName });
+    state.config.players.push({ id: playerId, name: playerName, emoji: playerEmoji });
 
     await prisma.$transaction([
       prisma.room.update({

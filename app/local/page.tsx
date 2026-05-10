@@ -57,6 +57,9 @@ export default function LocalGamePage() {
   };
 
   const cardSize = state.players.length > 3 ? 'sm' : 'md';
+  const emojiMap = Object.fromEntries(
+    state.config.players.map(p => [p.id, p.emoji ?? '🎴'])
+  );
 
   return (
     <div className="min-h-screen flex flex-col p-4 gap-4 max-w-7xl mx-auto w-full">
@@ -92,6 +95,7 @@ export default function LocalGamePage() {
                   isActive={i === state.currentPlayerIndex}
                   deck={state.deck}
                   size={cardSize}
+                  emoji={emojiMap[player.id]}
                 />
               ))}
             </div>
