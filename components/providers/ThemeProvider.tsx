@@ -8,7 +8,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('theme-dark', 'theme-light', 'theme-retro', 'theme-neon', 'theme-sunset');
+    root.classList.remove('theme-dark', 'theme-light', 'theme-retro', 'theme-neon', 'theme-sunset', 'theme-arcade');
     root.classList.add(`theme-${theme}`);
   }, [theme]);
 

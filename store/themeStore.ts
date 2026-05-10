@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type Theme = 'dark' | 'light' | 'retro' | 'neon' | 'sunset';
+export type Theme = 'dark' | 'light' | 'retro' | 'neon' | 'sunset' | 'arcade';
 
 interface ThemeStore {
   theme: Theme;

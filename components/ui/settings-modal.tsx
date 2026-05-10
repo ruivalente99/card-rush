@@ -16,6 +16,7 @@ const THEMES: { value: Theme; label: string; title: string }[] = [
   { value: 'retro',  label: '📼', title: 'Retro' },
   { value: 'neon',   label: '⚡', title: 'Neon' },
   { value: 'sunset', label: '🌅', title: 'Sunset' },
+  { value: 'arcade', label: '🕹️', title: 'Arcade' },
 ];
 
 export function SettingsModal({ open, onClose }: SettingsModalProps) {

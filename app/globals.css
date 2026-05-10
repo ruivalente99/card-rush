@@ -75,6 +75,30 @@
 }
 
 /* ──────────────────────────────────────────
+   ARCADE — "Cabinet"  black void, hot magenta
+   ────────────────────────────────────────── */
+.theme-arcade {
+  --background:        oklch(0.05 0.018 235);
+  --foreground:        oklch(0.95 0.008 235);
+  --card:              oklch(0.09 0.022 235);
+  --card-foreground:   oklch(0.95 0.008 235);
+  --border:            oklch(0.26 0.09  330);
+  --primary:           oklch(0.67 0.32  330);
+  --primary-foreground:oklch(0.98 0     0);
+  --muted:             oklch(0.13 0.018 235);
+  --muted-foreground:  oklch(0.52 0.04  290);
+  --accent:            oklch(0.18 0.035 270);
+  --accent-foreground: oklch(0.95 0.008 235);
+  --destructive:       oklch(0.60 0.27  15);
+  --input:             oklch(0.11 0.018 235);
+  --ring:              oklch(0.67 0.32  330);
+  --radius:            0.25rem;
+
+  --font-display: var(--font-geist-mono);
+  --brand-tracking: 0.1em;
+}
+
+/* ──────────────────────────────────────────
    NEON — "Cyberpunk"  dark void, electric lime
    ────────────────────────────────────────── */
 .theme-neon {
@@ -184,11 +208,13 @@ body {
 .theme-dark ::-webkit-scrollbar,
 .theme-retro ::-webkit-scrollbar,
 .theme-neon ::-webkit-scrollbar,
-.theme-sunset ::-webkit-scrollbar { width: 6px; }
+.theme-sunset ::-webkit-scrollbar,
+.theme-arcade ::-webkit-scrollbar { width: 6px; }
 .theme-dark ::-webkit-scrollbar-thumb,
-.theme-neon ::-webkit-scrollbar-thumb   { background: var(--muted); border-radius: 99px; }
+.theme-neon ::-webkit-scrollbar-thumb    { background: var(--muted); border-radius: 99px; }
 .theme-retro ::-webkit-scrollbar-thumb,
-.theme-sunset ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+.theme-sunset ::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 99px; }
+.theme-arcade ::-webkit-scrollbar-thumb  { background: var(--primary); border-radius: 0; }
 
 /* ── HyperTrain animations ── */
 @keyframes hypertrain-scroll {
