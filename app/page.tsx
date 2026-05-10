@@ -255,12 +255,12 @@ export default function HomePage() {
       <GameHeader />
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
         <div className="text-center">
-          <h1 className="text-7xl font-black text-foreground mb-2 brand-heading">
+          <h1 className="text-5xl sm:text-7xl font-black text-foreground mb-2 brand-heading">
             CARD<span className="text-primary">RUSH</span>
           </h1>
           <p className="text-muted-foreground text-lg">Push your luck. Know when to stop.</p>
         </div>
-        <div className="w-full max-w-sm space-y-3">
+        <div className="w-full max-w-sm space-y-3 px-1">
           <Button onClick={() => setMode('local-setup')} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-6 text-lg rounded-[var(--radius-xl)]">
             🎮 Local Game
           </Button>

@@ -70,15 +70,12 @@ export default function LobbyPage() {
               {code}
             </span>
           </div>
-          <div className="flex gap-2 mt-3">
-            <button
-              onClick={copyLink}
-              className="flex-1 text-sm py-2 px-3 rounded-[var(--radius-md)] border border-border bg-card hover:bg-card/80 text-muted-foreground hover:text-foreground transition-colors truncate"
-            >
-              {copied ? '✓ Copied!' : `🔗 ${inviteLink.replace('https://', '')}`}
-            </button>
-            <Button size="sm" variant="outline" onClick={copyLink}>
-              {copied ? '✓' : 'Copy'}
+          <div className="flex gap-2 mt-3 w-full">
+            <div className="flex-1 min-w-0 py-2 px-3 rounded-[var(--radius-md)] border border-border bg-card text-muted-foreground text-sm truncate">
+              🔗 {inviteLink.replace('https://', '')}
+            </div>
+            <Button size="sm" variant="outline" onClick={copyLink} className="shrink-0">
+              {copied ? '✓' : 'Copy link'}
             </Button>
           </div>
         </div>
@@ -107,13 +104,18 @@ export default function LobbyPage() {
         </div>
 
         {isHost ? (
-          <Button
-            onClick={startGame}
-            disabled={players.length < 2}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-5 text-lg"
-          >
-            {players.length < 2 ? 'Waiting for players…' : 'Start Game'}
-          </Button>
+          <div className="w-full space-y-2">
+            {players.length < 2 && (
+              <p className="text-center text-muted-foreground text-sm">Need at least 2 players…</p>
+            )}
+            <Button
+              onClick={startGame}
+              disabled={players.length < 2}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-5 text-lg disabled:opacity-50"
+            >
+              Start Game
+            </Button>
+          </div>
         ) : (
           <p className="text-muted-foreground text-sm">Waiting for host to start…</p>
         )}
