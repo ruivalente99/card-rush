@@ -20,7 +20,7 @@ export default function OnlineGamePage() {
   const params = useParams();
   const code = params.code as string;
   const router = useRouter();
-  const { onlineGame, playerId, setOnlineGame, setUI } = useGameStore();
+  const { onlineGame, playerId, setOnlineGame, setUI, ui } = useGameStore();
 
   useRoomSync(code);
 
@@ -70,6 +70,7 @@ export default function OnlineGamePage() {
           </button>
         }
         meta={`${code} · Round ${state.round}`}
+        ping={ui.ping}
       />
 
       <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">

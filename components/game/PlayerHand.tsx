@@ -3,7 +3,7 @@
 import { GameCard } from './GameCard';
 import { Badge } from '@/components/ui/badge';
 import type { Player } from '@/lib/game/types';
-import { bustProbability, countUniqueNumbers } from '@/lib/game/scoring';
+import { bustProbability, countUniqueNumbers, calculateRoundScore } from '@/lib/game/scoring';
 import type { Card } from '@/lib/game/types';
 
 interface PlayerHandProps {
@@ -19,6 +19,7 @@ export function PlayerHand({ player, isActive, deck, size = 'md', emoji }: Playe
   const uniqueNums = countUniqueNumbers(rs.hand);
   const bustProb = bustProbability(deck, rs.hand);
   const bustPct = Math.round(bustProb * 100);
+  const liveScore = rs.busted ? 0 : calculateRoundScore(rs.hand, rs.isFlip7);
 
   return (
     <div
@@ -44,7 +45,9 @@ export function PlayerHand({ player, isActive, deck, size = 'md', emoji }: Playe
         </div>
         <div className="text-right shrink-0">
           <div className="text-muted-foreground text-xs">Round</div>
-          <div className="text-foreground font-bold text-sm">{rs.roundScore}</div>
+          <div className={`font-bold text-sm ${rs.busted ? 'text-red-400 line-through' : 'text-foreground'}`}>
+            {liveScore}
+          </div>
         </div>
       </div>
 

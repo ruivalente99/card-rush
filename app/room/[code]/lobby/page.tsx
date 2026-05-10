@@ -11,8 +11,20 @@ export default function LobbyPage() {
   const code = params.code as string;
   const router = useRouter();
   const { playerId } = useGameStore();
-  const [players, setPlayers] = useState<{ id: string; name: string }[]>([]);
+  const [players, setPlayers] = useState<{ id: string; name: string; emoji?: string }[]>([]);
   const [isHost, setIsHost] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const inviteLink = typeof window !== 'undefined'
+    ? `${window.location.origin}/room/${code}/join`
+    : `/room/${code}/join`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(inviteLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   useEffect(() => {
     const poll = async () => {
@@ -58,7 +70,17 @@ export default function LobbyPage() {
               {code}
             </span>
           </div>
-          <p className="text-muted-foreground text-sm mt-2">Share this code with friends</p>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={copyLink}
+              className="flex-1 text-sm py-2 px-3 rounded-[var(--radius-md)] border border-border bg-card hover:bg-card/80 text-muted-foreground hover:text-foreground transition-colors truncate"
+            >
+              {copied ? '✓ Copied!' : `🔗 ${inviteLink.replace('https://', '')}`}
+            </button>
+            <Button size="sm" variant="outline" onClick={copyLink}>
+              {copied ? '✓' : 'Copy'}
+            </Button>
+          </div>
         </div>
 
         <div className="w-full bg-card rounded-[var(--radius-lg)] border border-border overflow-hidden">
@@ -71,6 +93,7 @@ export default function LobbyPage() {
             {players.map((p, i) => (
               <li key={p.id} className="px-4 py-3 flex items-center gap-2">
                 <span className="text-muted-foreground text-xs w-4">{i + 1}.</span>
+                {p.emoji && <span className="text-base leading-none">{p.emoji}</span>}
                 <span className="text-foreground">{p.name}</span>
                 {i === 0 && (
                   <span className="ml-auto text-xs text-primary font-medium">Host</span>

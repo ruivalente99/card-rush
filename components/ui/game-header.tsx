@@ -7,9 +7,10 @@ import { SettingsModal } from './settings-modal';
 interface GameHeaderProps {
   left?: React.ReactNode;
   meta?: string;
+  ping?: number | null;
 }
 
-export function GameHeader({ left, meta }: GameHeaderProps) {
+export function GameHeader({ left, meta, ping }: GameHeaderProps) {
   const [open, setOpen] = useState(false);
   const { name, emoji } = usePlayerStore();
 
@@ -19,6 +20,13 @@ export function GameHeader({ left, meta }: GameHeaderProps) {
         <div className="flex items-center gap-3">
           {left}
           {meta && <span className="text-muted-foreground text-sm font-mono">{meta}</span>}
+          {ping != null && (
+            <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${
+              ping < 100 ? 'text-emerald-500' : ping < 300 ? 'text-yellow-400' : 'text-red-400'
+            }`}>
+              {ping}ms
+            </span>
+          )}
         </div>
         <button
           onClick={() => setOpen(true)}

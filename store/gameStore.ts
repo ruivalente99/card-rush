@@ -10,6 +10,7 @@ interface UIState {
   showPassDeviceModal: boolean;
   pendingCard: Card | null;
   bustingPlayerName: string | null;
+  ping: number | null;
 }
 
 interface GameStore {
@@ -38,6 +39,7 @@ const defaultUI: UIState = {
   showPassDeviceModal: false,
   pendingCard: null,
   bustingPlayerName: null,
+  ping: null,
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -75,11 +77,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
   roomCode: null,
   playerId: null,
   setOnlineGame: (state) => set({ onlineGame: state }),
-  setRoomCode: (code) => set({ roomCode: code }),
-  setPlayerId: (id) => set({ playerId: id }),
+  setRoomCode: (code) => {
+    set({ roomCode: code });
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('flip7:roomCode', code);
+  },
+  setPlayerId: (id) => {
+    set({ playerId: id });
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('flip7:playerId', id);
+  },
   setLastSeq: (seq) => set({ lastSeq: seq }),
-  clearOnlineGame: () =>
-    set({ onlineGame: null, lastSeq: 0, roomCode: null, playerId: null }),
+  clearOnlineGame: () => {
+    set({ onlineGame: null, lastSeq: 0, roomCode: null, playerId: null });
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('flip7:roomCode');
+      sessionStorage.removeItem('flip7:playerId');
+    }
+  },
 
   ui: defaultUI,
   setUI: (partial) => set((s) => ({ ui: { ...s.ui, ...partial } })),

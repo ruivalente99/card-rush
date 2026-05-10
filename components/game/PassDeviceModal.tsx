@@ -13,8 +13,14 @@ export function PassDeviceModal() {
   const emoji = configPlayer?.emoji ?? '🎴';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-      <div className="text-center space-y-6 p-10 rounded-[var(--radius-xl)] bg-card border border-border max-w-xs w-full mx-4 animate-in zoom-in-75 duration-300">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+      onClick={() => setUI({ showPassDeviceModal: false })}
+    >
+      <div
+        className="text-center space-y-6 p-10 rounded-[var(--radius-xl)] bg-card border border-border max-w-xs w-full mx-4 animate-in zoom-in-75 duration-300"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="text-8xl leading-none">{emoji}</div>
         <div>
           <p className="text-foreground text-2xl font-bold">{current?.name}</p>
