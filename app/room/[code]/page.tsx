@@ -9,6 +9,7 @@ import { DeckCounter } from '@/components/game/DeckCounter';
 import { Scoreboard } from '@/components/game/Scoreboard';
 import { ActionBar } from '@/components/game/ActionBar';
 import { BustOverlay } from '@/components/game/BustOverlay';
+import { WinOverlay } from '@/components/game/WinOverlay';
 import { RoundEndOverlay } from '@/components/game/RoundEndOverlay';
 import { GameHeader } from '@/components/ui/game-header';
 import { usePlayerStore, deduplicateEmojis } from '@/store/playerStore';
@@ -26,6 +27,8 @@ export default function OnlineGamePage() {
   useEffect(() => {
     if (onlineGame?.phase === 'GAME_OVER') {
       setUI({ showWinOverlay: true });
+    } else if (onlineGame?.phase === 'PLAYING') {
+      setUI({ showWinOverlay: false });
     }
   }, [onlineGame?.phase]);
 
@@ -121,6 +124,7 @@ export default function OnlineGamePage() {
         onBeginRound={() => handleAction({ type: 'BEGIN_ROUND' })}
       />
       <BustOverlay />
+      <WinOverlay />
     </div>
   );
 }

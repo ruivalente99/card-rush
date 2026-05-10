@@ -51,5 +51,6 @@ export type GameAction =
   | { type: 'STAY' }
   | { type: 'START_GAME' }
   | { type: 'NEXT_TURN' }
-  | { type: 'NEXT_ROUND' }   // transition to ROUND_END, tally scores
-  | { type: 'BEGIN_ROUND' }; // transition from ROUND_END → PLAYING (new round)
+  | { type: 'NEXT_ROUND' }
+  | { type: 'BEGIN_ROUND' }
+  | { type: 'RESTART_GAME' };

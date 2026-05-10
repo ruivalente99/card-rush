@@ -288,6 +288,20 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'RESTART_GAME': {
+      if (state.phase !== 'GAME_OVER') return state;
+      return {
+        ...state,
+        phase: 'PLAYING',
+        deck: buildDeck(),
+        discardPile: [],
+        players: initPlayers(state.config),
+        currentPlayerIndex: 0,
+        round: 1,
+        winner: undefined,
+      };
+    }
+
     default:
       return state;
   }

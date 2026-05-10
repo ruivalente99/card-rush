@@ -5,25 +5,37 @@ import { useGameStore } from '@/store/gameStore';
 import { useRouter } from 'next/navigation';
 
 export function WinOverlay() {
-  const { ui, setUI, localGame, clearLocalGame } = useGameStore();
+  const { ui, setUI, localGame, onlineGame, clearLocalGame, playerId, roomCode } = useGameStore();
   const router = useRouter();
 
-  if (!ui.showWinOverlay || !localGame) return null;
+  const game = localGame ?? onlineGame;
+  const isOnline = !!onlineGame && !localGame;
+  const isHost = isOnline ? game?.config.players[0]?.id === playerId : true;
 
-  const winner = localGame.players.find((p) => p.id === localGame.winner);
+  if (!ui.showWinOverlay || !game) return null;
 
-  const handleClose = () => {
-    try {
-      const raw = localStorage.getItem('flip7:stats');
-      const stats = raw ? JSON.parse(raw) : { wins: 0, losses: 0, highScore: 0 };
-      const myScore = winner?.totalScore ?? 0;
-      stats.highScore = Math.max(stats.highScore, myScore);
-      localStorage.setItem('flip7:stats', JSON.stringify(stats));
-    } catch {}
+  const winner = game.players.find((p) => p.id === game.winner);
 
-    setUI({ showWinOverlay: false });
-    clearLocalGame();
-    router.push('/');
+  const handlePlayAgain = async () => {
+    if (isOnline) {
+      if (!isHost) return;
+      setUI({ showWinOverlay: false });
+      await fetch(`/api/room/${roomCode}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, action: { type: 'RESTART_GAME' } }),
+      });
+    } else {
+      try {
+        const raw = localStorage.getItem('flip7:stats');
+        const stats = raw ? JSON.parse(raw) : { wins: 0, losses: 0, highScore: 0 };
+        stats.highScore = Math.max(stats.highScore, winner?.totalScore ?? 0);
+        localStorage.setItem('flip7:stats', JSON.stringify(stats));
+      } catch {}
+      setUI({ showWinOverlay: false });
+      clearLocalGame();
+      router.push('/');
+    }
   };
 
   return (
@@ -38,7 +50,7 @@ export function WinOverlay() {
           <p className="text-muted-foreground mt-1 text-lg">{winner?.totalScore} points</p>
         </div>
         <div className="space-y-1 text-sm text-muted-foreground">
-          {[...localGame.players]
+          {[...game.players]
             .sort((a, b) => b.totalScore - a.totalScore)
             .map((p, i) => (
               <div key={p.id} className="flex justify-between">
@@ -47,12 +59,16 @@ export function WinOverlay() {
               </div>
             ))}
         </div>
-        <Button
-          onClick={handleClose}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg py-5"
-        >
-          Back to Menu
-        </Button>
+        {isOnline && !isHost ? (
+          <p className="text-muted-foreground text-sm">Waiting for host to restart…</p>
+        ) : (
+          <Button
+            onClick={handlePlayAgain}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg py-5"
+          >
+            {isOnline ? '🔄 Play Again' : '← Back to Menu'}
+          </Button>
+        )}
       </div>
     </div>
   );
