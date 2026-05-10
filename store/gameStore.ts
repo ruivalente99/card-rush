@@ -111,6 +111,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (prev) {
       const msgs = detectScoreToasts(prev.players, newState.players);
       msgs.forEach((msg) => get().addToast(msg));
+
+      // Detect bust for online overlay (server already advanced; overlay is cosmetic)
+      const prevBusted = new Set(prev.players.filter((p) => p.roundState.busted).map((p) => p.id));
+      const newlyBusted = newState.players.find((p) => p.roundState.busted && !prevBusted.has(p.id));
+      if (newlyBusted) {
+        get().setUI({ showBustOverlay: true, bustingPlayerName: newlyBusted.name });
+      }
     }
     set({ onlineGame: newState });
   },

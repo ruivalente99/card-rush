@@ -26,7 +26,7 @@ describe('START_GAME', () => {
     const next = applyAction(state, { type: 'START_GAME' });
     expect(next.phase).toBe('PLAYING');
     expect(next.players.length).toBe(2);
-    expect(next.deck.length).toBe(91);
+    expect(next.deck.length).toBe(93); // 79 numbers + 12 specials + 2 hypertrain
     expect(next.round).toBe(1);
   });
 
@@ -45,11 +45,13 @@ describe('DRAW - bust detection', () => {
 
     let state = applyAction(makeState(), { type: 'START_GAME' });
     state = applyAction(state, { type: 'DRAW' }); // draw 3 — safe
-    state = applyAction(state, { type: 'DRAW' }); // draw duplicate 3 → BUST + NEXT_TURN
+    state = applyAction(state, { type: 'DRAW' }); // draw duplicate 3 → BUST (no auto-NEXT_TURN)
 
     const p1 = state.players[0];
     expect(p1.roundState.busted).toBe(true);
     expect(p1.roundState.roundScore).toBe(0);
+    // Engine does NOT auto-advance; NEXT_TURN is dispatched by BustOverlay (local) or API route (online)
+    expect(state.currentPlayerIndex).toBe(0);
   });
 
   it('consumes second chance on duplicate', () => {

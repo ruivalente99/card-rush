@@ -270,6 +270,12 @@ export default function HomePage() {
           <Button onClick={() => setMode('online-join')} variant="outline" className="w-full border-border text-foreground hover:bg-accent font-bold py-6 text-lg rounded-[var(--radius-xl)]">
             🔗 Join Room
           </Button>
+          <button
+            onClick={() => router.push('/how-to-play')}
+            className="w-full text-muted-foreground hover:text-foreground text-sm py-2 transition-colors"
+          >
+            📖 How to Play
+          </button>
         </div>
         <p className="text-muted-foreground text-xs text-center max-w-xs">
           Draw cards to score points. Draw a duplicate and lose everything. First to {pointTarget} wins!

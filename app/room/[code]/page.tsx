@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { useRoomSync } from '@/hooks/useRoomSync';
@@ -21,6 +21,7 @@ export default function OnlineGamePage() {
   const code = params.code as string;
   const router = useRouter();
   const { onlineGame, playerId, setOnlineGame, setUI, ui } = useGameStore();
+  const playerRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useRoomSync(code);
 
@@ -31,6 +32,15 @@ export default function OnlineGamePage() {
       setUI({ showWinOverlay: false });
     }
   }, [onlineGame?.phase]);
+
+  // Scroll active player into view on mobile
+  useEffect(() => {
+    if (!onlineGame || onlineGame.phase !== 'PLAYING') return;
+    const ref = playerRefs.current[onlineGame.currentPlayerIndex];
+    if (ref) {
+      ref.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [onlineGame?.currentPlayerIndex]);
 
   const handleAction = async (action: GameAction) => {
     const res = await fetch(`/api/room/${code}/action`, {
@@ -80,6 +90,7 @@ export default function OnlineGamePage() {
             {state.players.map((player, i) => (
               <PlayerHand
                 key={player.id}
+                ref={(el) => { playerRefs.current[i] = el; }}
                 player={player}
                 isActive={i === state.currentPlayerIndex}
                 deck={state.deck}

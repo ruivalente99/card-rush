@@ -33,6 +33,10 @@ export function buildDeck(): Card[] {
     cards.push(makeCard('plus3'));
   }
 
+  // HyperTrain: 2 cards (rainbow score doubler)
+  cards.push(makeCard('hypertrain'));
+  cards.push(makeCard('hypertrain'));
+
   return shuffle(cards);
 }
 

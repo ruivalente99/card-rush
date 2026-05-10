@@ -31,6 +31,19 @@ describe('calculateRoundScore', () => {
     expect(calculateRoundScore([num(1), num(2)], true)).toBe(3 + LUCKY7_BONUS);
   });
 
+  it('doubles base when hyperTrainActive', () => {
+    expect(calculateRoundScore([num(3), num(5)], false, true)).toBe(16);
+  });
+
+  it('hyperTrain stacks with x2 (4× total)', () => {
+    expect(calculateRoundScore([num(4), x2], false, true)).toBe(16);
+  });
+
+  it('hyperTrain + x2 + plus3 order is correct', () => {
+    // base=4, ×2(hyper)=8, ×2(x2)=16, +3=19
+    expect(calculateRoundScore([num(4), x2, plus3], false, true)).toBe(19);
+  });
+
   it('ignores non-number cards for base', () => {
     expect(calculateRoundScore([freeze, num(5)], false)).toBe(5);
   });

@@ -75,6 +75,54 @@
 }
 
 /* ──────────────────────────────────────────
+   NEON — "Cyberpunk"  dark void, electric lime
+   ────────────────────────────────────────── */
+.theme-neon {
+  --background:        oklch(0.07 0.015 145);
+  --foreground:        oklch(0.92 0.03  145);
+  --card:              oklch(0.11 0.022 145);
+  --card-foreground:   oklch(0.92 0.03  145);
+  --border:            oklch(0.22 0.065 145);
+  --primary:           oklch(0.74 0.32  145);
+  --primary-foreground:oklch(0.07 0.015 145);
+  --muted:             oklch(0.16 0.022 145);
+  --muted-foreground:  oklch(0.55 0.045 145);
+  --accent:            oklch(0.20 0.04  145);
+  --accent-foreground: oklch(0.92 0.03  145);
+  --destructive:       oklch(0.58 0.27  15);
+  --input:             oklch(0.13 0.018 145);
+  --ring:              oklch(0.74 0.32  145);
+  --radius:            0.5rem;
+
+  --font-display: var(--font-geist-mono);
+  --brand-tracking: 0.06em;
+}
+
+/* ──────────────────────────────────────────
+   SUNSET — "Dusk"  dark warm, coral accent
+   ────────────────────────────────────────── */
+.theme-sunset {
+  --background:        oklch(0.10 0.03  25);
+  --foreground:        oklch(0.95 0.015 60);
+  --card:              oklch(0.14 0.04  28);
+  --card-foreground:   oklch(0.95 0.015 60);
+  --border:            oklch(0.26 0.065 32);
+  --primary:           oklch(0.68 0.26  35);
+  --primary-foreground:oklch(0.98 0     0);
+  --muted:             oklch(0.18 0.03  22);
+  --muted-foreground:  oklch(0.56 0.04  45);
+  --accent:            oklch(0.22 0.04  28);
+  --accent-foreground: oklch(0.95 0.015 60);
+  --destructive:       oklch(0.55 0.25  10);
+  --input:             oklch(0.13 0.03  22);
+  --ring:              oklch(0.68 0.26  35);
+  --radius:            1rem;
+
+  --font-display: var(--font-geist-sans);
+  --brand-tracking: 0.02em;
+}
+
+/* ──────────────────────────────────────────
    Tailwind v4 token mapping
    ────────────────────────────────────────── */
 @theme inline {
@@ -132,8 +180,60 @@ body {
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 25%, transparent);
 }
 
-/* Themed scrollbar (dark+retro) */
+/* Themed scrollbar */
 .theme-dark ::-webkit-scrollbar,
-.theme-retro ::-webkit-scrollbar { width: 6px; }
-.theme-dark ::-webkit-scrollbar-thumb  { background: var(--muted); border-radius: 99px; }
-.theme-retro ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+.theme-retro ::-webkit-scrollbar,
+.theme-neon ::-webkit-scrollbar,
+.theme-sunset ::-webkit-scrollbar { width: 6px; }
+.theme-dark ::-webkit-scrollbar-thumb,
+.theme-neon ::-webkit-scrollbar-thumb   { background: var(--muted); border-radius: 99px; }
+.theme-retro ::-webkit-scrollbar-thumb,
+.theme-sunset ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ── HyperTrain animations ── */
+@keyframes hypertrain-scroll {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.card-hypertrain {
+  background: linear-gradient(
+    135deg,
+    oklch(0.65 0.28 30),
+    oklch(0.72 0.26 75),
+    oklch(0.68 0.22 145),
+    oklch(0.65 0.23 215),
+    oklch(0.62 0.28 295),
+    oklch(0.65 0.28 30)
+  );
+  background-size: 300% 300%;
+  animation: hypertrain-scroll 3s linear infinite;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+.hypertrain-active-bar {
+  background: linear-gradient(
+    90deg,
+    oklch(0.65 0.28 30),
+    oklch(0.72 0.26 75),
+    oklch(0.68 0.22 145),
+    oklch(0.65 0.23 215),
+    oklch(0.62 0.28 295),
+    oklch(0.65 0.28 30)
+  );
+  background-size: 200% 100%;
+  animation: hypertrain-scroll 2s linear infinite;
+}
+
+/* ── Bonus card entrance ── */
+@keyframes card-bonus {
+  0%   { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+  60%  { transform: scale(1.18) rotate(4deg);  opacity: 1; }
+  80%  { transform: scale(0.95); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.card-bonus-enter {
+  animation: card-bonus 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

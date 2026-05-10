@@ -1,4 +1,4 @@
-export type CardType = 'number' | 'freeze' | 'second_chance' | 'x2' | 'plus3';
+export type CardType = 'number' | 'freeze' | 'second_chance' | 'x2' | 'plus3' | 'hypertrain';
 
 export interface Card {
   id: string;
@@ -14,6 +14,7 @@ export interface PlayerRoundState {
   busted: boolean;
   roundScore: number;
   isLucky7: boolean;
+  hyperTrainActive: boolean;
 }
 
 export interface Player {

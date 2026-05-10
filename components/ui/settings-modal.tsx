@@ -11,9 +11,11 @@ interface SettingsModalProps {
 }
 
 const THEMES: { value: Theme; label: string; title: string }[] = [
-  { value: 'dark',  label: '🌙', title: 'Dark' },
-  { value: 'light', label: '☀️', title: 'Light' },
-  { value: 'retro', label: '📼', title: 'Retro' },
+  { value: 'dark',   label: '🌙', title: 'Dark' },
+  { value: 'light',  label: '☀️', title: 'Light' },
+  { value: 'retro',  label: '📼', title: 'Retro' },
+  { value: 'neon',   label: '⚡', title: 'Neon' },
+  { value: 'sunset', label: '🌅', title: 'Sunset' },
 ];
 
 export function SettingsModal({ open, onClose }: SettingsModalProps) {
@@ -88,13 +90,13 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
         {/* Theme */}
         <div className="space-y-2">
           <label className="text-muted-foreground text-sm font-medium">Theme</label>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {THEMES.map((t) => (
               <button
                 key={t.value}
                 onClick={() => setTheme(t.value)}
                 className={cn(
-                  'flex-1 py-2 px-3 rounded-[var(--radius-md)] text-sm font-medium border transition-all flex items-center justify-center gap-1.5',
+                  'py-2 px-2 rounded-[var(--radius-md)] text-sm font-medium border transition-all flex items-center justify-center gap-1',
                   theme === t.value
                     ? 'bg-primary border-primary text-primary-foreground'
                     : 'bg-muted border-border text-foreground hover:bg-accent'

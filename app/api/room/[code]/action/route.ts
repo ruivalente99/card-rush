@@ -24,7 +24,16 @@ export async function POST(
       }
     }
 
-    const newState = applyAction(state, action);
+    let newState = applyAction(state, action);
+
+    // Engine doesn't auto-advance after bust; server does it so online games progress
+    if (action.type === 'DRAW' && newState.phase === 'PLAYING') {
+      const prevBusted = new Set(state.players.filter((p) => p.roundState.busted).map((p) => p.id));
+      const justBusted = newState.players.find((p) => p.roundState.busted && !prevBusted.has(p.id));
+      if (justBusted) {
+        newState = applyAction(newState, { type: 'NEXT_TURN' });
+      }
+    }
 
     const lastEvent = await tx.roomEvent.findFirst({
       where: { roomId: room.id },

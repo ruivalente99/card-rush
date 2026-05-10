@@ -11,6 +11,7 @@ function freshRoundState(): PlayerRoundState {
     busted: false,
     roundScore: 0,
     isLucky7: false,
+    hyperTrainActive: false,
   };
 }
 
@@ -37,7 +38,7 @@ function nextActiveIndex(players: Player[], from: number): number {
     const idx = (from + i) % n;
     if (!isPlayerDone(players[idx])) return idx;
   }
-  return from; // fallback (all done — caller should check allPlayersDone first)
+  return from;
 }
 
 function checkWin(state: GameState): GameState {
@@ -79,9 +80,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       const newDiscard = [card, ...state.discardPile];
       let newDeck = remaining;
 
-      // Handle special cards
+      // Freeze: auto-stay immediately
       if (card.type === 'freeze') {
-        const score = calculateRoundScore([...rs.hand, card], rs.isLucky7);
+        const score = calculateRoundScore([...rs.hand, card], rs.isLucky7, rs.hyperTrainActive);
         const updatedPlayer: Player = {
           ...player,
           roundState: {
@@ -103,6 +104,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
         return applyAction(next, { type: 'NEXT_TURN' });
       }
 
+      // Second chance: bank it, continue
       if (card.type === 'second_chance') {
         const updatedPlayer: Player = {
           ...player,
@@ -126,6 +128,31 @@ export function applyAction(state: GameState, action: GameAction): GameState {
         return next;
       }
 
+      // HyperTrain: activate doubling bonus, continue drawing
+      if (card.type === 'hypertrain') {
+        const newHand = [...rs.hand, card];
+        const uniqueNums = countUniqueNumbers(newHand);
+        const isLucky7 = uniqueNums >= 7;
+        const updatedPlayer: Player = {
+          ...player,
+          roundState: { ...rs, hand: newHand, hyperTrainActive: true, isLucky7 },
+        };
+        let next: GameState = {
+          ...state,
+          deck: newDeck,
+          discardPile: newDiscard,
+          players: state.players.map((p, i) =>
+            i === playerIdx ? updatedPlayer : p
+          ),
+        };
+        if (isLucky7) return applyAction(next, { type: 'STAY' });
+        if (state.config.gameMode === 'one-per-turn') {
+          return applyAction(next, { type: 'NEXT_TURN' });
+        }
+        return next;
+      }
+
+      // x2 / plus3: add to hand, keep drawing
       if (card.type === 'x2' || card.type === 'plus3') {
         const newHand = [...rs.hand, card];
         const uniqueNums = countUniqueNumbers(newHand);
@@ -156,7 +183,6 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       const isDuplicate = heldValues.has(card.value!);
 
       if (isDuplicate && rs.secondChances > 0) {
-        // Consume second chance
         const newHand = [...rs.hand, card];
         const uniqueNums = countUniqueNumbers(newHand);
         const isLucky7 = uniqueNums >= 7;
@@ -185,7 +211,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       }
 
       if (isDuplicate) {
-        // BUST
+        // BUST — do NOT auto-advance. BustOverlay (local) or API route (online) dispatches NEXT_TURN.
         const updatedPlayer: Player = {
           ...player,
           roundState: {
@@ -198,13 +224,12 @@ export function applyAction(state: GameState, action: GameAction): GameState {
         const newPlayers = state.players.map((p, i) =>
           i === playerIdx ? updatedPlayer : p
         );
-        let next: GameState = {
+        return {
           ...state,
           deck: newDeck,
           discardPile: newDiscard,
           players: newPlayers,
         };
-        return applyAction(next, { type: 'NEXT_TURN' });
       }
 
       // Safe number card
@@ -235,7 +260,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       const playerIdx = state.currentPlayerIndex;
       const player = state.players[playerIdx];
       const rs = player.roundState;
-      const score = calculateRoundScore(rs.hand, rs.isLucky7);
+      const score = calculateRoundScore(rs.hand, rs.isLucky7, rs.hyperTrainActive);
       const updatedPlayer: Player = {
         ...player,
         roundState: { ...rs, stayed: true, roundScore: score },
@@ -257,7 +282,6 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     }
 
     case 'NEXT_ROUND': {
-      // Tally scores and pause at ROUND_END so UI can show the summary screen
       const playersWithTotals = state.players.map((p) => ({
         ...p,
         totalScore: p.totalScore + p.roundState.roundScore,
@@ -267,8 +291,6 @@ export function applyAction(state: GameState, action: GameAction): GameState {
         phase: 'ROUND_END',
         players: playersWithTotals,
       };
-
-      // Check win condition now; if met, go directly to GAME_OVER
       return checkWin(stateWithTotals);
     }
 

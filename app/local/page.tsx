@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { useGameEngine } from '@/hooks/useGameEngine';
@@ -20,40 +20,40 @@ export default function LocalGamePage() {
   const router = useRouter();
   const { state, dispatch } = useGameEngine();
   const { setUI } = useGameStore();
+  const playerRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     if (!state) router.replace('/');
   }, [state]);
 
+  // Scroll active player into view on mobile
+  useEffect(() => {
+    if (!state || state.phase !== 'PLAYING') return;
+    const ref = playerRefs.current[state.currentPlayerIndex];
+    if (ref) {
+      ref.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [state?.currentPlayerIndex]);
+
   if (!state) return null;
 
   const handleStartGame = () => dispatch({ type: 'START_GAME' });
-
   const currentPlayer = state.players[state.currentPlayerIndex];
 
   const handleAction = (action: GameAction) => {
-    const prevIdx = state.currentPlayerIndex;
+    const prevPlayer = state.players[state.currentPlayerIndex];
     dispatch(action);
 
     const nextState = useGameStore.getState().localGame;
     if (!nextState) return;
 
-    const nextIdx = nextState.currentPlayerIndex;
-    const prevPlayer = state.players[prevIdx];
-    const nextPlayer = nextState.players[nextIdx];
+    const nextPlayer = nextState.players[nextState.currentPlayerIndex];
+    const playerChanged = nextState.phase === 'PLAYING' && prevPlayer?.id !== nextPlayer?.id;
 
-    if (
-      nextState.phase === 'PLAYING' &&
-      nextPlayer &&
-      prevPlayer?.id !== nextPlayer.id
-    ) {
-      const bustVisible = useGameStore.getState().ui.showBustOverlay;
-      if (bustVisible) {
-        setTimeout(() => setUI({ showPassDeviceModal: true }), 2100);
-      } else {
-        setTimeout(() => setUI({ showPassDeviceModal: true }), 200);
-      }
+    if (playerChanged && !useGameStore.getState().ui.showBustOverlay) {
+      setTimeout(() => setUI({ showPassDeviceModal: true }), 200);
     }
+    // Bust case: BustOverlay.handleDismiss dispatches NEXT_TURN and shows PassDeviceModal
   };
 
   const cardSize = state.players.length > 3 ? 'sm' : 'md';
@@ -91,6 +91,7 @@ export default function LocalGamePage() {
               {state.players.map((player, i) => (
                 <PlayerHand
                   key={player.id}
+                  ref={(el) => { playerRefs.current[i] = el; }}
                   player={player}
                   isActive={i === state.currentPlayerIndex}
                   deck={state.deck}

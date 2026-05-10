@@ -2,11 +2,12 @@ import type { Card } from './types';
 
 export const LUCKY7_BONUS = 15;
 
-export function calculateRoundScore(hand: Card[], isLucky7: boolean): number {
+export function calculateRoundScore(hand: Card[], isLucky7: boolean, hyperTrainActive = false): number {
   let base = hand
     .filter((c) => c.type === 'number')
     .reduce((sum, c) => sum + (c.value ?? 0), 0);
 
+  if (hyperTrainActive) base *= 2;
   if (hand.some((c) => c.type === 'x2')) base *= 2;
   if (hand.some((c) => c.type === 'plus3')) base += 3;
   if (isLucky7) base += LUCKY7_BONUS;
