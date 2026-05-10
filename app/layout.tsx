@@ -15,10 +15,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased theme-dark`}
       suppressHydrationWarning
     >
-      <body className="min-h-full bg-slate-950 text-white flex flex-col">
+      <body className="min-h-full flex flex-col">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

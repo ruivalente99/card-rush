@@ -8,6 +8,7 @@ interface GameCardProps {
   faceDown?: boolean;
   className?: string;
   animate?: boolean;
+  size?: 'sm' | 'md';
 }
 
 const SPECIAL_LABELS: Record<string, { label: string; color: string }> = {
@@ -24,9 +25,14 @@ function numberColor(value: number): string {
   return 'bg-red-100 text-red-800 border-red-300';
 }
 
-export function GameCard({ card, faceDown, className, animate }: GameCardProps) {
+export function GameCard({ card, faceDown, className, animate, size = 'md' }: GameCardProps) {
+  const dims = size === 'sm'
+    ? 'w-10 h-14 text-sm rounded-lg'
+    : 'w-16 h-24 text-xl rounded-xl';
+
   const base = cn(
-    'relative w-16 h-24 rounded-xl border-2 flex items-center justify-center select-none font-bold text-xl shadow-md',
+    'relative border-2 flex items-center justify-center select-none font-bold shadow-md',
+    dims,
     animate && 'animate-in fade-in zoom-in-75 duration-300',
     className
   );
@@ -34,7 +40,7 @@ export function GameCard({ card, faceDown, className, animate }: GameCardProps) 
   if (faceDown) {
     return (
       <div className={cn(base, 'bg-indigo-700 border-indigo-900')}>
-        <span className="text-indigo-300 text-3xl">🃏</span>
+        <span className={size === 'sm' ? 'text-xl' : 'text-3xl'}>🃏</span>
       </div>
     );
   }
@@ -50,7 +56,7 @@ export function GameCard({ card, faceDown, className, animate }: GameCardProps) 
   const { label, color } = SPECIAL_LABELS[card.type] ?? { label: '?', color: 'bg-gray-500 text-white' };
   return (
     <div className={cn(base, color, 'border-2 border-white/30')}>
-      <span className="text-2xl">{label}</span>
+      <span className={size === 'sm' ? 'text-base' : 'text-2xl'}>{label}</span>
     </div>
   );
 }

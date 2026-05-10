@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { useGameEngine } from '@/hooks/useGameEngine';
@@ -12,14 +12,14 @@ import { BustOverlay } from '@/components/game/BustOverlay';
 import { WinOverlay } from '@/components/game/WinOverlay';
 import { PassDeviceModal } from '@/components/game/PassDeviceModal';
 import { RoundEndOverlay } from '@/components/game/RoundEndOverlay';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { Button } from '@/components/ui/button';
 import type { GameAction } from '@/lib/game/types';
 
 export default function LocalGamePage() {
   const router = useRouter();
   const { state, dispatch } = useGameEngine();
-  const { setUI, ui } = useGameStore();
-  const prevPlayerIdxRef = useRef<number | null>(null);
+  const { setUI } = useGameStore();
 
   useEffect(() => {
     if (!state) {
@@ -39,7 +39,6 @@ export default function LocalGamePage() {
     const prevIdx = state.currentPlayerIndex;
     dispatch(action);
 
-    // After dispatch, read fresh state from store
     const nextState = useGameStore.getState().localGame;
     if (!nextState) return;
 
@@ -47,7 +46,6 @@ export default function LocalGamePage() {
     const prevPlayer = state.players[prevIdx];
     const nextPlayer = nextState.players[nextIdx];
 
-    // Show pass modal when turn changes to a different player (not during bust overlay)
     if (
       nextState.phase === 'PLAYING' &&
       nextPlayer &&
@@ -55,7 +53,6 @@ export default function LocalGamePage() {
     ) {
       const bustVisible = useGameStore.getState().ui.showBustOverlay;
       if (bustVisible) {
-        // Defer pass modal until bust overlay auto-dismisses (2s)
         setTimeout(() => setUI({ showPassDeviceModal: true }), 2100);
       } else {
         setTimeout(() => setUI({ showPassDeviceModal: true }), 200);
@@ -63,13 +60,18 @@ export default function LocalGamePage() {
     }
   };
 
+  const cardSize = state.players.length > 3 ? 'sm' : 'md';
+
   return (
-    <div className="min-h-screen flex flex-col p-4 gap-4 max-w-2xl mx-auto">
+    <div className="min-h-screen flex flex-col p-4 gap-4 max-w-7xl mx-auto w-full">
       <div className="flex items-center justify-between">
         <button onClick={() => router.push('/')} className="text-slate-400 hover:text-white text-sm">
           ← Menu
         </button>
-        <span className="text-slate-500 text-sm">Round {state.round}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-slate-500 text-sm">Round {state.round}</span>
+          <ThemeSwitcher />
+        </div>
       </div>
 
       {state.phase === 'LOBBY' && (
@@ -84,35 +86,40 @@ export default function LocalGamePage() {
       )}
 
       {(state.phase === 'PLAYING' || state.phase === 'ROUND_END') && (
-        <>
-          <DeckCounter deck={state.deck} discardPile={state.discardPile} />
-
-          <div className="space-y-3">
-            {state.players.map((player, i) => (
-              <PlayerHand
-                key={player.id}
-                player={player}
-                isActive={i === state.currentPlayerIndex}
-                deck={state.deck}
-              />
-            ))}
+        <div className="flex flex-col md:flex-row gap-4 flex-1">
+          {/* Left: deck + player hands */}
+          <div className="flex flex-col gap-3 md:flex-1 md:min-w-0">
+            <DeckCounter deck={state.deck} discardPile={state.discardPile} />
+            <div className="space-y-2">
+              {state.players.map((player, i) => (
+                <PlayerHand
+                  key={player.id}
+                  player={player}
+                  isActive={i === state.currentPlayerIndex}
+                  deck={state.deck}
+                  size={cardSize}
+                />
+              ))}
+            </div>
           </div>
 
-          <Scoreboard
-            players={state.players}
-            config={state.config}
-            round={state.round}
-            currentPlayerIndex={state.currentPlayerIndex}
-          />
-
-          {state.phase === 'PLAYING' && currentPlayer && (
-            <ActionBar
-              state={state}
-              playerId={currentPlayer.id}
-              onAction={handleAction}
+          {/* Right: scoreboard + action bar */}
+          <div className="flex flex-col gap-3 md:w-72 md:shrink-0">
+            <Scoreboard
+              players={state.players}
+              config={state.config}
+              round={state.round}
+              currentPlayerIndex={state.currentPlayerIndex}
             />
-          )}
-        </>
+            {state.phase === 'PLAYING' && currentPlayer && (
+              <ActionBar
+                state={state}
+                playerId={currentPlayer.id}
+                onAction={handleAction}
+              />
+            )}
+          </div>
+        </div>
       )}
 
       <RoundEndOverlay

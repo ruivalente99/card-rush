@@ -25,10 +25,13 @@ export interface Player {
 
 export type GamePhase = 'LOBBY' | 'PLAYING' | 'ROUND_END' | 'GAME_OVER';
 
+export type GameMode = 'free' | 'one-per-turn';
+
 export interface GameConfig {
   pointTarget: number;
   maxRounds?: number;
   turnTimerSeconds: number;
+  gameMode: GameMode;
   players: { id: string; name: string }[];
 }
 

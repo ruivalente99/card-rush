@@ -10,6 +10,7 @@ import { Scoreboard } from '@/components/game/Scoreboard';
 import { ActionBar } from '@/components/game/ActionBar';
 import { BustOverlay } from '@/components/game/BustOverlay';
 import { RoundEndOverlay } from '@/components/game/RoundEndOverlay';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import type { GameAction } from '@/lib/game/types';
 
 export default function OnlineGamePage() {
@@ -48,43 +49,54 @@ export default function OnlineGamePage() {
 
   const state = onlineGame;
   const isHost = state.config.players[0]?.id === playerId;
+  const cardSize = state.players.length > 3 ? 'sm' : 'md';
 
   return (
-    <div className="min-h-screen flex flex-col p-4 gap-4 max-w-2xl mx-auto">
+    <div className="min-h-screen flex flex-col p-4 gap-4 max-w-7xl mx-auto w-full">
       <div className="flex items-center justify-between">
         <button onClick={() => router.push('/')} className="text-slate-400 hover:text-white text-sm">
           ← Leave
         </button>
-        <span className="text-slate-500 text-sm font-mono">{code} · Round {state.round}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-slate-500 text-sm font-mono">{code} · Round {state.round}</span>
+          <ThemeSwitcher />
+        </div>
       </div>
 
-      <DeckCounter deck={state.deck} discardPile={state.discardPile} />
+      <div className="flex flex-col md:flex-row gap-4 flex-1">
+        {/* Left: deck + player hands */}
+        <div className="flex flex-col gap-3 md:flex-1 md:min-w-0">
+          <DeckCounter deck={state.deck} discardPile={state.discardPile} />
+          <div className="space-y-2">
+            {state.players.map((player, i) => (
+              <PlayerHand
+                key={player.id}
+                player={player}
+                isActive={i === state.currentPlayerIndex}
+                deck={state.deck}
+                size={cardSize}
+              />
+            ))}
+          </div>
+        </div>
 
-      <div className="space-y-3">
-        {state.players.map((player, i) => (
-          <PlayerHand
-            key={player.id}
-            player={player}
-            isActive={i === state.currentPlayerIndex}
-            deck={state.deck}
+        {/* Right: scoreboard + action bar */}
+        <div className="flex flex-col gap-3 md:w-72 md:shrink-0">
+          <Scoreboard
+            players={state.players}
+            config={state.config}
+            round={state.round}
+            currentPlayerIndex={state.currentPlayerIndex}
           />
-        ))}
+          {playerId && state.phase === 'PLAYING' && (
+            <ActionBar
+              state={state}
+              playerId={playerId}
+              onAction={handleAction}
+            />
+          )}
+        </div>
       </div>
-
-      <Scoreboard
-        players={state.players}
-        config={state.config}
-        round={state.round}
-        currentPlayerIndex={state.currentPlayerIndex}
-      />
-
-      {playerId && state.phase === 'PLAYING' && (
-        <ActionBar
-          state={state}
-          playerId={playerId}
-          onAction={handleAction}
-        />
-      )}
 
       <RoundEndOverlay
         state={state}

@@ -1,4 +1,4 @@
-import type { GameState, GameAction, Player, PlayerRoundState } from './types';
+import type { GameState, GameAction, GameMode, Player, PlayerRoundState } from './types';
 import { buildDeck, drawCard } from './deck';
 import { calculateRoundScore, countUniqueNumbers } from './scoring';
 
@@ -112,7 +112,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
             secondChances: rs.secondChances + 1,
           },
         };
-        return {
+        let next: GameState = {
           ...state,
           deck: newDeck,
           discardPile: newDiscard,
@@ -120,6 +120,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
             i === playerIdx ? updatedPlayer : p
           ),
         };
+        if (state.config.gameMode === 'one-per-turn') {
+          return applyAction(next, { type: 'NEXT_TURN' });
+        }
+        return next;
       }
 
       if (card.type === 'x2' || card.type === 'plus3') {
@@ -139,6 +143,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
           ),
         };
         if (isFlip7) return applyAction(next, { type: 'STAY' });
+        if (state.config.gameMode === 'one-per-turn') {
+          return applyAction(next, { type: 'NEXT_TURN' });
+        }
         return next;
       }
 
@@ -171,6 +178,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
           ),
         };
         if (isFlip7) return applyAction(next, { type: 'STAY' });
+        if (state.config.gameMode === 'one-per-turn') {
+          return applyAction(next, { type: 'NEXT_TURN' });
+        }
         return next;
       }
 
@@ -214,6 +224,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
         ),
       };
       if (isFlip7) return applyAction(next, { type: 'STAY' });
+      if (state.config.gameMode === 'one-per-turn') {
+        return applyAction(next, { type: 'NEXT_TURN' });
+      }
       return next;
     }
 
@@ -280,10 +293,12 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   }
 }
 
-export function createInitialState(config: GameState['config']): GameState {
+export function createInitialState(
+  config: Omit<GameState['config'], 'gameMode'> & { gameMode?: GameMode }
+): GameState {
   return {
     phase: 'LOBBY',
-    config,
+    config: { ...config, gameMode: config.gameMode ?? 'free' },
     deck: [],
     discardPile: [],
     players: [],

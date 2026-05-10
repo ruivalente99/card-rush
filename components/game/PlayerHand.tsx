@@ -10,9 +10,10 @@ interface PlayerHandProps {
   player: Player;
   isActive: boolean;
   deck: Card[];
+  size?: 'sm' | 'md';
 }
 
-export function PlayerHand({ player, isActive, deck }: PlayerHandProps) {
+export function PlayerHand({ player, isActive, deck, size = 'md' }: PlayerHandProps) {
   const rs = player.roundState;
   const uniqueNums = countUniqueNumbers(rs.hand);
   const bustProb = bustProbability(deck, rs.hand);
@@ -20,38 +21,34 @@ export function PlayerHand({ player, isActive, deck }: PlayerHandProps) {
 
   return (
     <div
-      className={`rounded-2xl p-4 border-2 transition-all ${
+      className={`rounded-2xl p-3 border-2 transition-all ${
         isActive
           ? 'border-indigo-500 bg-indigo-950/50 shadow-lg shadow-indigo-500/20'
           : 'border-slate-700 bg-slate-900/30'
       }`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-white">{player.name}</span>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="font-semibold text-white text-sm">{player.name}</span>
           {isActive && (
-            <Badge className="bg-indigo-600 text-white text-xs animate-pulse">
-              Turn
-            </Badge>
+            <Badge className="bg-indigo-600 text-white text-xs animate-pulse">Turn</Badge>
           )}
           {rs.busted && <Badge variant="destructive" className="text-xs">Bust!</Badge>}
           {rs.stayed && <Badge className="bg-green-700 text-white text-xs">Stayed</Badge>}
           {rs.froze && <Badge className="bg-blue-700 text-white text-xs">Frozen</Badge>}
           {rs.isFlip7 && (
-            <Badge className="bg-yellow-500 text-black text-xs font-bold">
-              FLIP 7! 🎉
-            </Badge>
+            <Badge className="bg-yellow-500 text-black text-xs font-bold">FLIP 7! 🎉</Badge>
           )}
         </div>
-        <div className="text-right">
-          <div className="text-slate-400 text-xs">Round score</div>
-          <div className="text-white font-bold">{rs.roundScore}</div>
+        <div className="text-right shrink-0">
+          <div className="text-slate-400 text-xs">Round</div>
+          <div className="text-white font-bold text-sm">{rs.roundScore}</div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 min-h-10">
+      <div className="flex flex-wrap gap-1.5 min-h-8">
         {rs.hand.map((card) => (
-          <GameCard key={card.id} card={card} className="w-12 h-18 text-base" animate />
+          <GameCard key={card.id} card={card} size={size} animate />
         ))}
         {rs.hand.length === 0 && (
           <span className="text-slate-600 text-sm italic">No cards yet</span>
@@ -59,7 +56,7 @@ export function PlayerHand({ player, isActive, deck }: PlayerHandProps) {
       </div>
 
       {isActive && rs.hand.length > 0 && !rs.busted && !rs.stayed && !rs.froze && (
-        <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
+        <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
           <span>{uniqueNums}/7 unique</span>
           <span>·</span>
           <span

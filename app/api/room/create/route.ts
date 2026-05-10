@@ -6,7 +6,7 @@ import type { GameConfig } from '@/lib/game/types';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { hostId, hostName, pointTarget = 200, maxRounds, turnTimerSeconds = 0 } = body;
+  const { hostId, hostName, pointTarget = 200, maxRounds, turnTimerSeconds = 0, gameMode = 'free' } = body;
 
   if (!hostId || !hostName) {
     return NextResponse.json({ error: 'hostId and hostName required' }, { status: 400 });
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     pointTarget,
     maxRounds,
     turnTimerSeconds,
+    gameMode,
     players: [{ id: hostId, name: hostName }],
   };
 

@@ -1,11 +1,16 @@
 'use client';
 
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { useEffect } from 'react';
+import { useThemeStore } from '@/store/themeStore';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      {children}
-    </NextThemesProvider>
-  );
+  const theme = useThemeStore((s) => s.theme);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('theme-dark', 'theme-light', 'theme-retro');
+    root.classList.add(`theme-${theme}`);
+  }, [theme]);
+
+  return <>{children}</>;
 }
