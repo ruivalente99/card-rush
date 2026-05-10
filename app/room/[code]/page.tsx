@@ -41,6 +41,11 @@ export default function OnlineGamePage() {
     }
   };
 
+  const emojiMap = useMemo(
+    () => deduplicateEmojis(onlineGame?.config.players ?? [], playerId ?? ''),
+    [onlineGame?.config.players, playerId]
+  );
+
   if (!onlineGame) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -52,11 +57,6 @@ export default function OnlineGamePage() {
   const state = onlineGame;
   const isHost = state.config.players[0]?.id === playerId;
   const cardSize = state.players.length > 3 ? 'sm' : 'md';
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const emojiMap = useMemo(
-    () => deduplicateEmojis(state.config.players, playerId ?? ''),
-    [state.config.players, playerId]
-  );
 
   return (
     <div className="min-h-screen flex flex-col p-4 gap-4 max-w-7xl mx-auto w-full">
